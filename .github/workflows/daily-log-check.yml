@@ -1,0 +1,56 @@
+name: Daily log check
+# ~23:30 Lagos. Looks for that day's logs/<date>.md on ANY branch (your week branch counts).
+# If the run drifts past midnight it judges the day that just ended, not the new one.
+# Missing? Opens or updates one "Missing daily log" issue.
+on:
+  schedule:
+    - cron: "30 22 * * *"   # 22:30 UTC = 23:30 WAT
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Look for today's log on any branch
+        id: log
+        run: |
+          CYCLE_START=2026-09-14
+          CYCLE_END=2026-12-06
+          # GitHub cron drifts, sometimes past midnight. If we woke after midnight,
+          # the day we are judging is the one that just ended, not the one that just began.
+          HOUR=$(TZ=Africa/Lagos date +%H)
+          if [ "$HOUR" -lt 6 ]; then
+            TODAY=$(TZ=Africa/Lagos date -d "yesterday" +%F)
+          else
+            TODAY=$(TZ=Africa/Lagos date +%F)
+          fi
+          if [[ "$TODAY" < "$CYCLE_START" || "$TODAY" > "$CYCLE_END" ]]; then
+            echo "Outside the cycle ($CYCLE_START to $CYCLE_END). Nothing to do."
+            echo "skip=yes" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "today=$TODAY" >> "$GITHUB_OUTPUT"
+          FOUND=no
+          for ref in $(git for-each-ref --format='%(refname)' refs/remotes/origin); do
+            if git cat-file -e "$ref:logs/$TODAY.md" 2>/dev/null; then FOUND=yes; break; fi
+          done
+          echo "found=$FOUND" >> "$GITHUB_OUTPUT"
+      - name: Nudge
+        if: steps.log.outputs.found == 'no'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TODAY: ${{ steps.log.outputs.today }}
+        run: |
+          NUM=$(gh issue list --label "missed-log" --state open --json number --jq '.[0].number // empty')
+          BODY="No \`logs/$TODAY.md\` pushed by 23:30. Twenty focused minutes and three sentences still count. Push the file and close this issue. Commit and push the log the same day, not at the end of the week."
+          if [ -z "$NUM" ]; then
+            gh label create missed-log --color D93F0B --description "A daily log was not pushed" 2>/dev/null || true
+            gh issue create --title "Missing daily log: $TODAY" --label missed-log --body "$BODY"
+          else
+            gh issue comment "$NUM" --body "Still missing on $TODAY. $BODY"
+          fi

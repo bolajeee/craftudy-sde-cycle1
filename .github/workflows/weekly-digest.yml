@@ -1,0 +1,56 @@
+name: Weekly digest
+# Sunday 21:15 Lagos time: counts this week's logs and open PRs, posts a digest issue the mentor and peers can read.
+on:
+  schedule:
+    - cron: "15 20 * * 0"   # 20:15 UTC Sunday = 21:15 WAT
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Build digest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          START="2026-09-14"
+          CYCLE_START=2026-09-14
+          CYCLE_END=2026-12-06
+          TODAY=$(TZ=Africa/Lagos date +%F)
+          if [[ "$TODAY" < "$CYCLE_START" || "$TODAY" > "$CYCLE_END" ]]; then
+            echo "Outside the cycle ($CYCLE_START to $CYCLE_END). Nothing to do."
+            exit 0
+          fi
+          DAYS=$(( ( $(date -d "$TODAY" +%s) - $(date -d "$START" +%s) ) / 86400 ))
+          WEEK=$(( DAYS / 7 + 1 ))
+          LOGS=0; MISSING=""
+          for i in 6 5 4 3 2 1 0; do
+            D=$(date -d "$TODAY -$i day" +%F)
+            HIT=no
+            for ref in $(git for-each-ref --format='%(refname)' refs/remotes/origin); do
+              if git cat-file -e "$ref:logs/$D.md" 2>/dev/null; then HIT=yes; break; fi
+            done
+            if [ "$HIT" = yes ]; then LOGS=$((LOGS+1)); else MISSING="$MISSING $D"; fi
+          done
+          PRS=$(gh pr list --state open --json number,title,url --jq '.[] | "- #\(.number) \(.title) \(.url)"')
+          [ -z "$PRS" ] && PRS="- none open"
+          COMMITS=$(git log --since="7 days ago" --oneline | wc -l | tr -d ' ')
+          {
+            echo "## Week $WEEK digest ($TODAY)"
+            echo
+            echo "- Daily logs this week: **$LOGS / 7**"
+            [ -n "$MISSING" ] && echo "- Missing:$MISSING"
+            echo "- Commits in the last 7 days: **$COMMITS**"
+            echo "- Open PRs:"
+            echo "$PRS"
+            echo
+            echo "Deliverable rule: PR open by Sunday 9pm. Two missed weeks in a cycle pauses you until the next cycle."
+          } > digest.md
+          gh label create digest --color 0E8A16 --description "Weekly digest" 2>/dev/null || true
+          gh issue create --title "Week $WEEK digest" --label digest --body-file digest.md
