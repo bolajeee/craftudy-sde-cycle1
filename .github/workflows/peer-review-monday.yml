@@ -1,0 +1,44 @@
+name: Peer review Monday
+# Mondays ~08:00 Lagos. Opens one issue reminding you to review your peers' PRs.
+# This exists so peer review has a trigger that is not a person remembering to ask.
+on:
+  schedule:
+    - cron: "0 7 * * 1"     # 07:00 UTC = 08:00 WAT, Monday
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Open the reminder
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          CYCLE_START=2026-09-14
+          CYCLE_END=2026-12-06
+          TODAY=$(TZ=Africa/Lagos date +%F)
+          if [[ "$TODAY" < "$CYCLE_START" || "$TODAY" > "$CYCLE_END" ]]; then
+            echo "Outside the cycle. Nothing to do."; exit 0
+          fi
+          BODY=$(cat <<'EOF'
+Peer review day.
+
+Open your two peers' pull requests and leave **at least two real comments on each**. A real
+comment points at something specific:
+
+- "Why `chmod 777` here? Would 755 work?"
+- "This breaks if the folder name has a space in it. Try it."
+
+"Nice work 👍" is not a review.
+
+Repo links are in the group and on the dashboard. Close this issue when you have done both.
+
+This runs before Shina reviews on Wednesday, so you catch the easy things first and he spends
+his time on the hard ones.
+EOF
+)
+          gh label create peer-review --color 1D76DB --description "Weekly peer review" 2>/dev/null || true
+          gh issue create --title "Peer review: $TODAY" --label peer-review --body "$BODY"
