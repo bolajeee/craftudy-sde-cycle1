@@ -15,4 +15,10 @@ fi
 #timestamp generation
 TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S)
 
-echo "$TIMESTAMP"
+#filename generation
+BACKUP_FILE="backup-$TIMESTAMP.tar.gz"
+
+#zip the file but exclude node_modules
+tar -czf "$BACKUP_FILE" --exclude='node_modules' "$SOURCE_DIR"
+
+echo "Backup created: $BACKUP_FILE"
