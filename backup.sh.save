@@ -1,0 +1,5 @@
+#!/bin/bash
+
+SOURCE_DIR="$1"
+
+echo "$SOURCE_DIR"
