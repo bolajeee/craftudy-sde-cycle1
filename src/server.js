@@ -1,6 +1,8 @@
 const http = require("http");
+const fs = require("fs").promises;
 
-const server = http.createServer((request, response) => {
+const server = http.createServer(async (request, response) => {
+
   if (request.method === "POST" && request.url === "/tasks") {
     let body = "";
 
@@ -8,22 +10,60 @@ const server = http.createServer((request, response) => {
       body += chunk;
     });
 
-    request.on("end", () => {
+    request.on("end", async () => {
+      try {
+        const task = JSON.parse(body);
 
-      const task = JSON.parse(body);
+        const data = await fs.readFile("tasks.json", "utf8");
+        const tasks = JSON.parse(data);
 
-      console.log("Task:", task);
-      console.log("Title:", task.title);
+        let highestId = 0;
 
-    response.end("Task received");
-  
-  });
+        for (const existingTask of tasks) {
+          if (existingTask.id > highestId) {
+            highestId = existingTask.id;
+          }
+        }
+
+        const newTask = {
+          id: highestId + 1,
+          title: task.title,
+          completed: task.completed
+        };
+
+        tasks.push(newTask);
+
+        const updatedTasks = JSON.stringify(tasks);
+
+        await fs.writeFile("tasks.json", updatedTasks, "utf8");
+
+        response.statusCode = 201;
+        response.setHeader("Content-Type", "application/json");
+        response.end(JSON.stringify(newTask));
+
+      } catch (error) {
+        response.statusCode = 500;
+        response.end("Error processing task");
+      }
+    });
 
     return;
   }
 
   if (request.method === "GET" && request.url === "/tasks") {
-    response.end("Here are the tasks");
+    try {
+      const data = await fs.readFile("tasks.json", "utf8");
+
+      const tasks = JSON.parse(data);
+
+      response.setHeader("Content-Type", "application/json");
+      response.end(JSON.stringify(tasks));
+
+    } catch (error) {
+      response.statusCode = 500;
+      response.end("Could not read tasks");
+    }
+
     return;
   }
 
@@ -31,4 +71,8 @@ const server = http.createServer((request, response) => {
   response.end("Not Found");
 });
 
-server.listen(4000);
+const port = Number(process.env.PORT) || 4000;
+
+console.log(port);
+
+server.listen(port);
