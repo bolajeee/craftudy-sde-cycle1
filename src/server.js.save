@@ -1,0 +1,62 @@
+const http = require("http");
+const fs = require("fs")
+
+const server = http.createServer((request, response) => {
+
+  if (request.method === "POST" && request.url === "/tasks") {
+  let body = "";
+
+  request.on("data", (chunk) => {
+    body += chunk;
+  });
+
+  request.on("end", () => {
+    const task = JSON.parse(body);
+
+    fs.readFile("tasks.json", "utf8", (error, data) => {
+      if (error) {
+        response.statusCode = 500; response.end("Error fetching tasks"); return;
+      }
+
+      const tasks = JSON.parse(data);
+      tasks.push(task)
+      const updatedTasks = JSON.stringify(tasks)
+
+      fs.writeFile("tasks.json", updatedTasks, "utf8", (error) => {
+  if (error) {
+    response.statusCode = 500; response.end("Error saving tasks"); return;
+  }
+
+  response.statusCode = 201;
+  response.setHeader("Content-Type", "application/json");
+  response.end(JSON.stringify(task));
+});
+    });
+  });
+
+  return;
+}
+
+  if (request.method === "GET" && request.url === "/tasks") {
+    fs.readFile("tasks.json","utf8",(error, data) => {
+	if(error){
+	  response.statusCode = 500;
+	  response.end("could not read tasks")
+	  return;
+     }
+	const tasks = JSON.parse(data)
+
+        response.setHeader("Content-Type", "application/json");
+        response.end(JSON.stringify(tasks));
+   })
+	return;
+  }
+
+  response.statusCode = 404;
+  response.end("Not Found");
+});
+
+const port = 4000
+console.log(port)
+server.listen(port);
+
