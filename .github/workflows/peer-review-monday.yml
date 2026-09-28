@@ -18,7 +18,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           CYCLE_START=2026-09-14
-          CYCLE_END=2026-12-06
+          CYCLE_END=2026-12-13
           TODAY=$(TZ=Africa/Lagos date +%F)
           if [[ "$TODAY" < "$CYCLE_START" || "$TODAY" > "$CYCLE_END" ]]; then
             echo "Outside the cycle. Nothing to do."; exit 0

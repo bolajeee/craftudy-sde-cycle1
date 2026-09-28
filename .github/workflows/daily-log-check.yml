@@ -20,7 +20,7 @@ jobs:
         id: log
         run: |
           CYCLE_START=2026-09-14
-          CYCLE_END=2026-12-06
+          CYCLE_END=2026-12-13
           # GitHub cron drifts, sometimes past midnight. If we woke after midnight,
           # the day we are judging is the one that just ended, not the one that just began.
           HOUR=$(TZ=Africa/Lagos date +%H)

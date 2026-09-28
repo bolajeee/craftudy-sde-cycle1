@@ -21,7 +21,7 @@ jobs:
         run: |
           START="2026-09-14"
           CYCLE_START=2026-09-14
-          CYCLE_END=2026-12-06
+          CYCLE_END=2026-12-13
           TODAY=$(TZ=Africa/Lagos date +%F)
           if [[ "$TODAY" < "$CYCLE_START" || "$TODAY" > "$CYCLE_END" ]]; then
             echo "Outside the cycle ($CYCLE_START to $CYCLE_END). Nothing to do."
