@@ -45,10 +45,21 @@ and the bot will have opened an issue every night in between.
 
 ## Monday: start the week's branch
 
+The branch is named `week-1`, `week-2`, and so on. **With the hyphen.** It is a small thing, but
+three repos reviewed side by side are much easier to read when they are laid out identically.
+
 ```bash
 git checkout main
 git pull
 git checkout -b week-1
+```
+
+Named it wrong already? Rename it, do not start over:
+
+```bash
+git branch -m week1 week-1
+git push origin -u week-1
+git push origin --delete week1
 ```
 
 You now work on `week-1` all week. `main` stays as it was until the PR is merged.
@@ -136,6 +147,65 @@ PR by Sunday 9pm.
 
 The call holds even if only one person shows up.
 
+
+## Where the DSA solutions go
+
+In `dsa/`. **One file per problem, not one file per week**, and not buried in the daily log.
+
+```
+dsa/two-sum.md
+dsa/contains-duplicate.md
+dsa/best-time-to-buy-and-sell-stock.md
+```
+
+Each file has three parts, in this order:
+
+```markdown
+# Two Sum
+
+Given an array of numbers and a target, return the indices of the two
+numbers that add up to the target.
+
+## Approach
+
+Walk the array once. For each number, work out what its partner would
+have to be (target minus this number) and check whether we have already
+seen that partner. If we have, we are done. If not, remember this number
+and where it was.
+
+## Code
+
+​```js
+function twoSum(nums, target) {
+  const seen = new Map();
+  for (let i = 0; i < nums.length; i++) {
+    const needed = target - nums[i];
+    if (seen.has(needed)) return [seen.get(needed), i];
+    seen.set(nums[i], i);
+  }
+}
+​```
+
+## Complexity
+
+O(n) time, because we touch each number once.
+O(n) space, because the Map can grow to the size of the input.
+
+Brute force would be O(n²) time and O(1) space. The Map buys time with space.
+```
+
+**The approach goes first, in plain English, before any code.** If you cannot say what
+you are going to do in three sentences, you are not ready to type. That section is the
+part being marked, not the code.
+
+**Why a folder and not the log.** The log is a diary — it is ordered by date and you will
+never read it again. `dsa/` is a reference. By the end of the cycle it holds three dozen
+problems, each with the approach that worked and the trade-off you made. That folder is
+what you revise from the night before an interview. The log cannot do that job.
+
+Still mention the problem in the day's log, one line, with how long it took. Then the
+solution itself lives in `dsa/`.
+
 ## If you use GitHub Desktop
 
 Everything above in buttons instead of commands.
@@ -163,6 +233,37 @@ Everything above in buttons instead of commands.
 2. Back in GitHub Desktop: `Current Branch` → `main` → **Fetch/Pull origin**.
 3. New week, new branch from `main`.
 
+
+## On AI, and how we check you actually learned it
+
+Use AI. Seriously. You will use it for the rest of your career and pretending otherwise is
+training for a job that no longer exists. It is listed as a resource in the plan.
+
+There is exactly one rule: **you must be able to explain every line you ship.**
+
+That is not a slogan, it is checked. Three ways, and none of them are a gotcha:
+
+**1. You declare it.** The PR asks where AI helped you this week. Answer honestly and specifically.
+Nobody is marked down for using it. The only thing that breaks the rule is hiding it, because then
+nobody can tell which parts you actually hold.
+
+**2. The five-minute walkthrough.** At each fortnightly call, one file is picked from your pull
+request and you talk through it line by line. Why this and not that. What breaks if you delete
+this line. Where it fails. Five minutes. Nothing survives this if you did not understand what you
+shipped, and everything survives it if you did, no matter who typed it first.
+
+**3. Change it live.** Sometimes you will be asked to make a small modification on the call. Make
+it handle an empty folder. Make it exit non-zero on failure. Two minutes. Understanding shows up
+instantly here.
+
+We also look at *how* the work arrived. A week that lands in one commit on Sunday night gets
+questions, not because a big commit is cheating, but because that is not what learning looks like
+from the outside. Steady daily pushes make this a non-issue, which is why the daily log exists.
+
+None of this is about catching you. If you can explain it and change it, it is yours. If you can
+not, then whatever produced it, you did not learn anything this week, and that is the only failure
+this programme actually cares about.
+
 ## Quick answers
 
 **Do I push once a week?** No. Daily. The bot checks nightly.
@@ -174,8 +275,9 @@ one missed daily log does not.
 
 **Finished early?** Open the PR early. Reviews can start sooner.
 
-**Stuck more than 45 minutes?** Write the blocker in the log and in the group. AI first, then
-your peer, then Shina.
+**Stuck more than 45 minutes?** Write it on the **Blocked on** line in that day's log. That line is
+pulled out automatically and shown to Shina, so writing it there is how you ask for help without
+having to chase anyone. Put "nothing" when you are not stuck. AI first, then your peer, then Shina.
 
 **We have never used PRs before.** You have merged before. This is a merge with a review pause.
 Nothing else is different.
@@ -185,3 +287,9 @@ add him and each other with Write access. See the access section above.
 
 **Where does the review conversation happen?** On the pull request page itself, on the
 "Files changed" tab. Click a line number to comment on that exact line.
+
+**Am I allowed to use AI?** Yes. See the section above. Declare it, and be able to explain and
+change what you ship.
+
+**Where do DSA solutions go?** `dsa/`, one file per problem, approach in plain English before
+the code. See the section above.
