@@ -12,10 +12,20 @@ const server = http.createServer(async (request, response) => {
 
     request.on("end", async () => {
       try {
-        const task = JSON.parse(body);
+	
+	let task;
+
+	try{
+           task = JSON.parse(body);
+         } catch (error){
+		response.statusCode = 400
+		response.end("Invalid JSON")
+		return;
+	}
 
         const data = await fs.readFile("tasks.json", "utf8");
-        const tasks = JSON.parse(data);
+        
+	const tasks = JSON.parse(data);
 
         let highestId = 0;
 
@@ -50,7 +60,7 @@ const server = http.createServer(async (request, response) => {
     return;
   }
 
-  if (request.method === "GET" && request.url === "/tasks") {
+ if (request.method === "GET" && request.url === "/tasks") {
     try {
       const data = await fs.readFile("tasks.json", "utf8");
 
