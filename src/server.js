@@ -1,88 +1,79 @@
-const http = require("http");
+const express = require("express");
 const fs = require("fs").promises;
+const { createTaskSchema } = require("./validation");
 
-const server = http.createServer(async (request, response) => {
+const app = express();
 
-  if (request.method === "POST" && request.url === "/tasks") {
-    let body = "";
-
-    request.on("data", (chunk) => {
-      body += chunk;
-    });
-
-    request.on("end", async () => {
-      try {
-	
-	let task;
-
-	try{
-           task = JSON.parse(body);
-         } catch (error){
-		response.statusCode = 400
-		response.end("Invalid JSON")
-		return;
-	}
-
-        const data = await fs.readFile("tasks.json", "utf8");
-        
-	const tasks = JSON.parse(data);
-
-        let highestId = 0;
-
-        for (const existingTask of tasks) {
-          if (existingTask.id > highestId) {
-            highestId = existingTask.id;
-          }
-        }
-
-        const newTask = {
-          id: highestId + 1,
-          title: task.title,
-          completed: task.completed
-        };
-
-        tasks.push(newTask);
-
-        const updatedTasks = JSON.stringify(tasks);
-
-        await fs.writeFile("tasks.json", updatedTasks, "utf8");
-
-        response.statusCode = 201;
-        response.setHeader("Content-Type", "application/json");
-        response.end(JSON.stringify(newTask));
-
-      } catch (error) {
-        response.statusCode = 500;
-        response.end("Error processing task");
-      }
-    });
-
-    return;
-  }
-
- if (request.method === "GET" && request.url === "/tasks") {
-    try {
-      const data = await fs.readFile("tasks.json", "utf8");
-
-      const tasks = JSON.parse(data);
-
-      response.setHeader("Content-Type", "application/json");
-      response.end(JSON.stringify(tasks));
-
-    } catch (error) {
-      response.statusCode = 500;
-      response.end("Could not read tasks");
-    }
-
-    return;
-  }
-
-  response.statusCode = 404;
-  response.end("Not Found");
-});
+app.use(express.json())
 
 const port = Number(process.env.PORT) || 4000;
 
-console.log(port);
+app.get("/", (request, response) => {
+  response.send("Tasks API is running");
+});
 
-server.listen(port);
+
+app.get("/tasks", async (request, response) => {
+  try {
+    const data = await fs.readFile("tasks.json", "utf8");
+
+    const tasks = JSON.parse(data);
+
+    response.json(tasks);
+  } catch (error) {
+    response.status(500).json({
+      error: "Could not read tasks"
+    });
+  }
+});
+
+app.post("/tasks", async (request, response) => {
+  const result = createTaskSchema.safeParse(request.body);
+
+  if (!result.success) {
+    return response.status(400).json({
+      error: "Invalid task",
+      details: result.error.issues
+    });
+  }
+
+  try {
+    const data = await fs.readFile("tasks.json", "utf8");
+
+    const tasks = JSON.parse(data);
+
+    let highestId = 0;
+
+    for (const existingTask of tasks) {
+      if (existingTask.id > highestId) {
+        highestId = existingTask.id;
+      }
+    }
+
+     const newTask = {
+      id: highestId + 1,
+      title: result.data.title,
+      completed: result.data.completed
+    };
+
+    tasks.push(newTask);
+
+    await fs.writeFile(
+      "tasks.json",
+      JSON.stringify(tasks),
+      "utf8"
+    );
+
+    response.status(201).json(newTask);
+  } catch (error) {
+    response.status(500).json({
+      error: "Could not create task"
+    });
+  }
+});
+
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});
+
+
