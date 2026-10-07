@@ -1,6 +1,6 @@
 const express = require("express");
 const fs = require("fs").promises;
-const { createTaskSchema } = require("./validation");
+const validateTask = require("./middleware/validateTask.js");
 
 const app = express();
 
@@ -27,15 +27,7 @@ app.get("/tasks", async (request, response) => {
   }
 });
 
-app.post("/tasks", async (request, response) => {
-  const result = createTaskSchema.safeParse(request.body);
-
-  if (!result.success) {
-    return response.status(400).json({
-      error: "Invalid task",
-      details: result.error.issues
-    });
-  }
+app.post("/tasks", validateTask , async (request, response) => {
 
   try {
     const data = await fs.readFile("tasks.json", "utf8");
@@ -52,8 +44,8 @@ app.post("/tasks", async (request, response) => {
 
      const newTask = {
       id: highestId + 1,
-      title: result.data.title,
-      completed: result.data.completed
+      title: request.task.title,
+      completed: request.task.completed
     };
 
     tasks.push(newTask);
