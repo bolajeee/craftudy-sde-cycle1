@@ -5,6 +5,9 @@ const createTaskSchema = z.object({
   completed: z.boolean()
 });
 
+const updateTaskSchema = createTaskSchema.partial()
+
 module.exports = {
-  createTaskSchema
+  createTaskSchema,
+  updateTaskSchema
 };
