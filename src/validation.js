@@ -19,8 +19,14 @@ const signupSchema = z.object({
   path: ["confirmPassword"]
 })
 
+const loginSchema = z.object({
+  email: z.email(),
+  password: z.string()
+})
+
 module.exports = {
   createTaskSchema,
   updateTaskSchema,
-  signupSchema
+  signupSchema,
+  loginSchema
 };
