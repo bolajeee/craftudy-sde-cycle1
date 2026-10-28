@@ -3,10 +3,9 @@ const { z } = require("zod");
 const createTaskSchema = z.object({
   title: z.string().min(1),
   completed: z.boolean(),
-  userId: z.number().int().positive()
 });
 
-const updateTaskSchema = createTaskSchema.omit({userId: true}).partial()
+const updateTaskSchema = createTaskSchema.partial()
 
 const signupSchema = z.object({
   name: z.string().min(3),

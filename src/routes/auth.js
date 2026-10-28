@@ -2,6 +2,8 @@ const express = require("express");
 const {signupSchema, loginSchema} = require("../validation.js")
 const pool = require("../db")
 const bcrypt = require("bcrypt")
+const jwt = require("jsonwebtoken");
+
 
 const router = express.Router();
 
@@ -90,9 +92,16 @@ router.post("/login", async (req, res, next) => {
       });
     }
 
+    //sign userId with JWT
+    const token = jwt.sign(
+      { userId: foundUser.id }, process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
     // 7. Return safe user details
     return res.status(200).json({
       message: "Login successful",
+      token,
       user: {
         id: foundUser.id,
         name: foundUser.name,

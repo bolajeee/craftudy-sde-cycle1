@@ -2,12 +2,17 @@ const express = require("express");
 const router = express.Router();
 const { createTaskSchema, updateTaskSchema } = require("../validation.js")
 const pool = require("../db.js");
+const authenticateToken = require("../middleware/authenticateToken.js");
+
+
+router.use(authenticateToken);
 
 
  // GET /tasks — retrieve all tasks
       router.get("/", async (req, res) => {
         const result = await pool.query(
-          "SELECT id, title, completed FROM tasks ORDER BY id"
+          "SELECT id, title, completed FROM tasks WHERE user_id = $1"
+	  [req.user.id]
         );
 
         const tasks = result.rows.map((task) => ({
@@ -30,12 +35,12 @@ const pool = require("../db.js");
               details: result.error.issues
             });
           }
-         const { title, completed, userId } = result.data;
+         const { title, completed } = result.data;
          const dbResult = await pool.query(
             `INSERT INTO tasks (title, completed, user_id)
              VALUES ($1, $2, $3)
              RETURNING id, title, completed`,
-            [title, completed, userId]
+            [title, completed, req.user.id]
           );
         const newTask = {
             ...dbResult.rows[0],
