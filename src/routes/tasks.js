@@ -61,8 +61,8 @@ router.use(authenticateToken);
           }
 
           const result = await pool.query(
-            "SELECT id, title, completed FROM tasks WHERE id = $1",
-            [id]
+            "SELECT id, title, completed FROM tasks WHERE id = $1 AND user_id = $2",
+            [id, req.user.id]
           );
 
           if (result.rows.length === 0) {
@@ -110,12 +110,12 @@ router.use(authenticateToken);
            position++;
          }
 
-         values.push(id);
+         values.push(id, req.user.id);
 
         const dbResult = await pool.query(
            `UPDATE tasks
             SET ${fields.join(", ")}
-            WHERE id = $${position}
+            WHERE id = $${position} AND user_id = $${position + 1}
             RETURNING id, title, completed`,
            values
          );
@@ -145,8 +145,8 @@ router.use(authenticateToken);
          }
 
          const result = await pool.query(
-           "DELETE FROM tasks WHERE id = $1 RETURNING id",
-           [id]
+           "DELETE FROM tasks WHERE id = $1 AND user_id = $2 RETURNING id",
+           [id, req.user.id]
          );
 
          if (result.rows.length === 0) {

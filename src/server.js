@@ -1,8 +1,12 @@
 const express = require("express");
-const app = express();
-const port = Number(process.env.PORT) || 4000;
 const taskRouter = require("./routes/tasks")
 const authRouter = require("./routes/auth")
+const helmet = require("helmet");
+
+
+const port = Number(process.env.PORT) || 4000;
+const app = express();
+
 
 //route logging middleware
 app.use((req, res, next) => {
@@ -11,7 +15,7 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json());
-
+app.use(helmet());
 app.use("/tasks", taskRouter);
 app.use("/auth", authRouter);
 
