@@ -3,7 +3,7 @@ const {signupSchema, loginSchema} = require("../validation.js")
 const pool = require("../db")
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken");
-
+const { rateLimit } = require("express-rate-limit");
 
 const router = express.Router();
 
@@ -49,8 +49,18 @@ return res.status(201).json({
   }
 });
 
+// rate limiter (15mins)
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 5,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: {
+    error: "Too many login attempts. Please try again later."
+  }
+});
 
-router.post("/login", async (req, res, next) => {
+router.post("/login", loginLimiter, async (req, res, next) => {
   // 1. Validate the request body
   const result = loginSchema.safeParse(req.body);
 
@@ -78,6 +88,15 @@ router.post("/login", async (req, res, next) => {
 
     // 4. Get the matching user record
     const foundUser = user.rows[0];
+
+if (
+  typeof foundUser.password_hash !== "string" ||
+  foundUser.password_hash.length === 0
+) {
+  return res.status(401).json({
+    error: "Invalid email or password"
+  });
+}
 
     // 5. Compare the submitted password with the stored hash
     const comparedHash = await bcrypt.compare(
