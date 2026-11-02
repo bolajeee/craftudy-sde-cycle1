@@ -1,6 +1,6 @@
 /**
  * Binary Search (W6)
- * Date: 2026-11-02 | Time taken: __ min
+ * Date: 2026-11-02 | Time taken: 60 min
  *
  * Approach:
  * The array is sorted, so check the middle element.
