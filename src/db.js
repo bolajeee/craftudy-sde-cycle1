@@ -1,10 +1,9 @@
+require('dotenv').config();
 
-require("dotenv").config();
-
-const { Pool } = require("pg");
+const { Pool } = require('pg');
 
 if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL is missing from the environment");
+  throw new Error('DATABASE_URL is missing from the environment');
 }
 
 const pool = new Pool({

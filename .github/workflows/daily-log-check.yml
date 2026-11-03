@@ -4,7 +4,7 @@ name: Daily log check
 # Missing? Opens or updates one "Missing daily log" issue.
 on:
   schedule:
-    - cron: "30 22 * * *"   # 22:30 UTC = 23:30 WAT
+    - cron: '30 22 * * *' # 22:30 UTC = 23:30 WAT
   workflow_dispatch:
 permissions:
   contents: read

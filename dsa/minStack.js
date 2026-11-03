@@ -4,39 +4,32 @@ class MinStack {
     this.minStack = [];
   }
 
+  push(val) {
+    this.stack.push(val);
 
-
-push(val) {
-  this.stack.push(val);
-
-  if (
-    this.minStack.length === 0 ||
-    val <= this.minStack.at(-1)
-  ) {
-    this.minStack.push(val);
-  }
-}
-
-
-pop() {
-  const removed = this.stack.pop();
-
-  if (removed === this.minStack.at(-1)) {
-    this.minStack.pop();
+    if (this.minStack.length === 0 || val <= this.minStack.at(-1)) {
+      this.minStack.push(val);
+    }
   }
 
-  return removed;
-}
+  pop() {
+    const removed = this.stack.pop();
 
-top() {
-  const lastVal = this.stack.at(-1)
-  return lastVal
-}
+    if (removed === this.minStack.at(-1)) {
+      this.minStack.pop();
+    }
 
-getMin(){
-  return this.minStack.at(-1)
-}
+    return removed;
+  }
 
+  top() {
+    const lastVal = this.stack.at(-1);
+    return lastVal;
+  }
+
+  getMin() {
+    return this.minStack.at(-1);
+  }
 }
 
 const stack = new MinStack();
@@ -49,5 +42,5 @@ console.log(stack.getMin()); // -3
 
 stack.pop();
 
-console.log(stack.top());    // 0
+console.log(stack.top()); // 0
 console.log(stack.getMin()); // -2

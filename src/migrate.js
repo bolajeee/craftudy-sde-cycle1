@@ -1,10 +1,8 @@
+const fs = require('node:fs/promises');
+const path = require('node:path');
+const pool = require('./db');
 
-const fs = require("node:fs/promises");
-const path = require("node:path");
-const pool = require("./db");
-
-const migrationsDirectory = path.join(__dirname, "..", "migrations");
-
+const migrationsDirectory = path.join(__dirname, '..', 'migrations');
 
 async function runMigrations() {
   await pool.query(`
@@ -16,45 +14,36 @@ async function runMigrations() {
 
   const files = await fs.readdir(migrationsDirectory);
 
-  const migrationFiles = files
-    .filter((file) => file.endsWith(".sql"))
-    .sort();
+  const migrationFiles = files.filter((file) => file.endsWith('.sql')).sort();
 
-  const { rows } = await pool.query(
-    "SELECT filename FROM schema_migrations"
-  );
+  const { rows } = await pool.query('SELECT filename FROM schema_migrations');
 
-  const appliedMigrations = new Set(
-    rows.map((row) => row.filename)
-  );
+  const appliedMigrations = new Set(rows.map((row) => row.filename));
 
   const pendingMigrations = migrationFiles.filter(
-    (file) => !appliedMigrations.has(file)
+    (file) => !appliedMigrations.has(file),
   );
 
   for (const file of pendingMigrations) {
-    const sql = await fs.readFile(
-      path.join(migrationsDirectory, file),
-      "utf8"
-    );
+    const sql = await fs.readFile(path.join(migrationsDirectory, file), 'utf8');
 
     const client = await pool.connect();
 
     try {
-      await client.query("BEGIN");
+      await client.query('BEGIN');
 
       await client.query(sql);
 
       await client.query(
-        "INSERT INTO schema_migrations (filename) VALUES ($1)",
-        [file]
+        'INSERT INTO schema_migrations (filename) VALUES ($1)',
+        [file],
       );
 
-      await client.query("COMMIT");
+      await client.query('COMMIT');
 
       console.log(`Applied migration: ${file}`);
     } catch (error) {
-      await client.query("ROLLBACK");
+      await client.query('ROLLBACK');
       throw error;
     } finally {
       client.release();
@@ -62,13 +51,13 @@ async function runMigrations() {
   }
 
   if (pendingMigrations.length === 0) {
-    console.log("No pending migrations.");
+    console.log('No pending migrations.');
   }
 }
 
 runMigrations()
   .catch((error) => {
-    console.error("Migration failed:", error.message);
+    console.error('Migration failed:', error.message);
     process.exitCode = 1;
   })
   .finally(() => pool.end());

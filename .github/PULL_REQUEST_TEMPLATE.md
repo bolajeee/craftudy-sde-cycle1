@@ -7,6 +7,7 @@
 **Where I need review most:**
 
 ## Checklist
+
 - [ ] 7 daily logs in `logs/`
 - [ ] No secrets committed (`.env` ignored, `.env.example` present)
 - [ ] README updated if setup changed

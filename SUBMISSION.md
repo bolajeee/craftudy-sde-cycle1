@@ -100,6 +100,7 @@ submission package. Nothing is emailed, nothing is uploaded anywhere else.
 > exist. I am not sure my exit codes are right.
 >
 > ## Checklist
+>
 > - [x] 7 daily logs in `logs/`
 > - [x] No secrets committed
 > - [x] README updated if setup changed
@@ -141,10 +142,12 @@ The call holds even if only one person shows up.
 Everything above in buttons instead of commands.
 
 **Monday, start the week's branch**
+
 1. `Current Branch` dropdown → **New Branch** → name it `week-1` → **Create Branch**.
 2. Click **Publish branch** so it exists on GitHub too.
 
 **Every day**
+
 1. Do the work. Create `logs/2026-09-15.md` in your editor and fill it in.
 2. GitHub Desktop shows the changed files under **Changes**.
 3. Type a short summary at the bottom left, e.g. `day 1: ssh keys working`.
@@ -152,6 +155,7 @@ Everything above in buttons instead of commands.
 5. Click **Push origin**. This is the step people forget. Nothing is on GitHub until you push.
 
 **Sunday, open the pull request**
+
 1. Push your last commit.
 2. Click **Preview Pull Request** (or menu **Branch → Create Pull Request**). Your browser opens.
 3. Check it says `base: main ← compare: week-1`.
@@ -159,6 +163,7 @@ Everything above in buttons instead of commands.
 5. Click **Create pull request**. You are done, that is the submission.
 
 **After it is approved**
+
 1. On the website, click **Merge pull request**.
 2. Back in GitHub Desktop: `Current Branch` → `main` → **Fetch/Pull origin**.
 3. New week, new branch from `main`.
@@ -169,7 +174,7 @@ Everything above in buttons instead of commands.
 
 **Can I commit straight to `main`?** No. Then there is nothing to open a PR from.
 
-**I missed Tuesday.** Log Wednesday and carry on. Two missed *weekly deliverables* pauses you,
+**I missed Tuesday.** Log Wednesday and carry on. Two missed _weekly deliverables_ pauses you,
 one missed daily log does not.
 
 **Finished early?** Open the PR early. Reviews can start sooner.

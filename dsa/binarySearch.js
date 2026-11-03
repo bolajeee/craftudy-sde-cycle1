@@ -27,9 +27,9 @@ function binarySearch(nums, target) {
 }
 
 const nums = [2, 5, 8, 12, 16, 23, 38, 56, 72, 91];
-console.log(binarySearch(nums, 23));  // 5
-console.log(binarySearch(nums, 72));  // 8
-console.log(binarySearch(nums, 4));   // -1
-console.log(binarySearch(nums, 91));  // 9
+console.log(binarySearch(nums, 23)); // 5
+console.log(binarySearch(nums, 72)); // 8
+console.log(binarySearch(nums, 4)); // -1
+console.log(binarySearch(nums, 91)); // 9
 console.log(binarySearch(nums, 100)); // -1
-console.log(binarySearch([], 5));     // -1 (empty array)
+console.log(binarySearch([], 5)); // -1 (empty array)

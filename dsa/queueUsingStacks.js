@@ -1,32 +1,32 @@
-class QueueUsingStacks{
-  constructor(){
+class QueueUsingStacks {
+  constructor() {
     this.inputStack = [];
     this.outputStack = [];
- }
-
-enqueue(val){
-  this.inputStack.push(val)
-}
-
-transferIfNeeded(){
-  if(this.outputStack.length === 0){
-    while(this.inputStack.length > 0){
-      this.outputStack.push(this.inputStack.pop());
-  }
- }
-}
-
-dequeue(){
-  this.transferIfNeeded();
-
-  if(this.outputStack.length === 0){
-    return undefined;
   }
 
-  return this.outputStack.pop();
-}
+  enqueue(val) {
+    this.inputStack.push(val);
+  }
 
-peek() {
+  transferIfNeeded() {
+    if (this.outputStack.length === 0) {
+      while (this.inputStack.length > 0) {
+        this.outputStack.push(this.inputStack.pop());
+      }
+    }
+  }
+
+  dequeue() {
+    this.transferIfNeeded();
+
+    if (this.outputStack.length === 0) {
+      return undefined;
+    }
+
+    return this.outputStack.pop();
+  }
+
+  peek() {
     this.transferIfNeeded();
 
     if (this.outputStack.length === 0) {
@@ -35,7 +35,6 @@ peek() {
 
     return this.outputStack.at(-1);
   }
-
 }
 
 const queue = new QueueUsingStacks();

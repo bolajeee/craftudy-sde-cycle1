@@ -1,48 +1,46 @@
-const express = require("express");
-const {signupSchema, loginSchema} = require("../validation.js")
-const pool = require("../db")
-const bcrypt = require("bcrypt")
-const jwt = require("jsonwebtoken");
-const { rateLimit } = require("express-rate-limit");
+const express = require('express');
+const { signupSchema, loginSchema } = require('../validation.js');
+const pool = require('../db');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const { rateLimit } = require('express-rate-limit');
 
 const router = express.Router();
 
-router.post("/signup", async(req, res, next) => {
+router.post('/signup', async (req, res, next) => {
   const result = signupSchema.safeParse(req.body);
 
   // If it failed, return status 400 with a JSON error.
-  if(result.success === false){
+  if (result.success === false) {
     return res.status(400).json({
-        error: 'Invalid signup info'
-   })
+      error: 'Invalid signup info',
+    });
   }
 
-  try{
-   const user = await pool.query(
-	"SELECT id FROM users WHERE email = $1",
-	[result.data.email]
-  )
+  try {
+    const user = await pool.query('SELECT id FROM users WHERE email = $1', [
+      result.data.email,
+    ]);
 
-if (user.rows.length > 0) {
-  return res.status(409).json({
-    error: "Email already in use"
-  });
-}
+    if (user.rows.length > 0) {
+      return res.status(409).json({
+        error: 'Email already in use',
+      });
+    }
 
-const passwordHash = await bcrypt.hash(result.data.password, 12);
+    const passwordHash = await bcrypt.hash(result.data.password, 12);
 
-const newUser = await pool.query(
-  `INSERT INTO users (name, email, password_hash)
+    const newUser = await pool.query(
+      `INSERT INTO users (name, email, password_hash)
    VALUES ($1, $2, $3)
    RETURNING id, name, email`,
-  [result.data.name, result.data.email, passwordHash]
-);
+      [result.data.name, result.data.email, passwordHash],
+    );
 
-return res.status(201).json({
-  message: "Account created successfully",
-  user: newUser.rows[0]
-});
-
+    return res.status(201).json({
+      message: 'Account created successfully',
+      user: newUser.rows[0],
+    });
   } catch (err) {
     console.error(err);
     next(err);
@@ -53,20 +51,20 @@ return res.status(201).json({
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 5,
-  standardHeaders: "draft-8",
+  standardHeaders: 'draft-8',
   legacyHeaders: false,
   message: {
-    error: "Too many login attempts. Please try again later."
-  }
+    error: 'Too many login attempts. Please try again later.',
+  },
 });
 
-router.post("/login", loginLimiter, async (req, res, next) => {
+router.post('/login', loginLimiter, async (req, res, next) => {
   // 1. Validate the request body
   const result = loginSchema.safeParse(req.body);
 
   if (result.success === false) {
     return res.status(400).json({
-      error: "Invalid login info"
+      error: 'Invalid login info',
     });
   }
 
@@ -76,63 +74,60 @@ router.post("/login", loginLimiter, async (req, res, next) => {
       `SELECT id, name, email, password_hash
        FROM users
        WHERE email = $1`,
-      [result.data.email]
+      [result.data.email],
     );
 
     // 3. Reject unknown email addresses
     if (user.rows.length === 0) {
       return res.status(401).json({
-        error: "Invalid email or password"
+        error: 'Invalid email or password',
       });
     }
 
     // 4. Get the matching user record
     const foundUser = user.rows[0];
 
-if (
-  typeof foundUser.password_hash !== "string" ||
-  foundUser.password_hash.length === 0
-) {
-  return res.status(401).json({
-    error: "Invalid email or password"
-  });
-}
+    if (
+      typeof foundUser.password_hash !== 'string' ||
+      foundUser.password_hash.length === 0
+    ) {
+      return res.status(401).json({
+        error: 'Invalid email or password',
+      });
+    }
 
     // 5. Compare the submitted password with the stored hash
     const comparedHash = await bcrypt.compare(
       result.data.password,
-      foundUser.password_hash
+      foundUser.password_hash,
     );
 
     // 6. Reject an incorrect password
     if (!comparedHash) {
       return res.status(401).json({
-        error: "Invalid email or password"
+        error: 'Invalid email or password',
       });
     }
 
     //sign userId with JWT
-    const token = jwt.sign(
-      { userId: foundUser.id }, process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
+    const token = jwt.sign({ userId: foundUser.id }, process.env.JWT_SECRET, {
+      expiresIn: '1h',
+    });
 
     // 7. Return safe user details
     return res.status(200).json({
-      message: "Login successful",
+      message: 'Login successful',
       token,
       user: {
         id: foundUser.id,
         name: foundUser.name,
-        email: foundUser.email
-      }
+        email: foundUser.email,
+      },
     });
-
   } catch (err) {
     console.error(err);
     next(err);
   }
 });
-
 
 module.exports = router;

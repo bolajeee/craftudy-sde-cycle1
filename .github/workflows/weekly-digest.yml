@@ -2,7 +2,7 @@ name: Weekly digest
 # Sunday 21:15 Lagos time: counts this week's logs and open PRs, posts a digest issue the mentor and peers can read.
 on:
   schedule:
-    - cron: "15 20 * * 0"   # 20:15 UTC Sunday = 21:15 WAT
+    - cron: '15 20 * * 0' # 20:15 UTC Sunday = 21:15 WAT
   workflow_dispatch:
 permissions:
   contents: read
