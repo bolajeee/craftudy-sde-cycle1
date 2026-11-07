@@ -4,6 +4,7 @@ process.env.NODE_ENV = 'test';
 require('dotenv').config({
   path: path.resolve(__dirname, '../.env.test'),
   override: true,
+  quiet: true,
 });
 
 // Safety net: refuse to run against anything that isn't a test database
