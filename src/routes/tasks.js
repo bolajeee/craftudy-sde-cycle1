@@ -8,22 +8,21 @@ router.use(authenticateToken);
 
 // GET /tasks — retrieve all tasks
 router.get('/', async (req, res, next) => {
-  try{
-  const result = await pool.query(
-    'SELECT id, title, completed FROM tasks WHERE user_id = $1',
-     [req.user.id],
-  );
+  try {
+    const result = await pool.query(
+      'SELECT id, title, completed FROM tasks WHERE user_id = $1',
+      [req.user.id],
+    );
 
-  const tasks = result.rows.map((task) => ({
-    ...task,
-    id: Number(task.id),
-  }));
+    const tasks = result.rows.map((task) => ({
+      ...task,
+      id: Number(task.id),
+    }));
 
-  res.status(200).json(tasks);
-} catch(error){
-  next(error);
-}
-
+    res.status(200).json(tasks);
+  } catch (error) {
+    next(error);
+  }
 });
 
 // POST /tasks — create a task

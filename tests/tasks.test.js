@@ -75,7 +75,10 @@ describe('POST /tasks', () => {
     ['a missing title', { completed: false }],
     ['an empty title', { title: '', completed: false }],
     ['a missing completed flag', { title: 'Write tests' }],
-    ['a non-boolean completed flag', { title: 'Write tests', completed: 'yes' }],
+    [
+      'a non-boolean completed flag',
+      { title: 'Write tests', completed: 'yes' },
+    ],
   ])('rejects %s with 400', async (_label, body) => {
     const res = await createTask(alice, body);
 
@@ -86,17 +89,24 @@ describe('POST /tasks', () => {
 
 describe('GET /tasks', () => {
   test("lists only the signed-in user's tasks", async () => {
-    const mine = await createTask(alice, { title: 'Alice task', completed: false });
+    const mine = await createTask(alice, {
+      title: 'Alice task',
+      completed: false,
+    });
     await createTask(bob, { title: 'Bob task', completed: true });
 
-    const res = await request(app).get('/tasks').set('Authorization', alice.auth);
+    const res = await request(app)
+      .get('/tasks')
+      .set('Authorization', alice.auth);
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual([mine.body]);
   });
 
   test('returns an empty array when the user has no tasks', async () => {
-    const res = await request(app).get('/tasks').set('Authorization', alice.auth);
+    const res = await request(app)
+      .get('/tasks')
+      .set('Authorization', alice.auth);
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual([]);
@@ -116,18 +126,25 @@ describe('GET /tasks/:id', () => {
   });
 
   test('returns 404 for a task that does not exist', async () => {
-    const res = await request(app).get('/tasks/999999').set('Authorization', alice.auth);
+    const res = await request(app)
+      .get('/tasks/999999')
+      .set('Authorization', alice.auth);
 
     expect(res.status).toBe(404);
     expect(res.body).toEqual({ error: 'Task not found' });
   });
 
-  test.each(['abc', '0', '-1', '1.5'])('rejects id "%s" with 400', async (id) => {
-    const res = await request(app).get(`/tasks/${id}`).set('Authorization', alice.auth);
+  test.each(['abc', '0', '-1', '1.5'])(
+    'rejects id "%s" with 400',
+    async (id) => {
+      const res = await request(app)
+        .get(`/tasks/${id}`)
+        .set('Authorization', alice.auth);
 
-    expect(res.status).toBe(400);
-    expect(res.body).toEqual({ error: 'Invalid task ID' });
-  });
+      expect(res.status).toBe(400);
+      expect(res.body).toEqual({ error: 'Invalid task ID' });
+    },
+  );
 });
 
 describe('PATCH /tasks/:id', () => {
@@ -205,7 +222,9 @@ describe('DELETE /tasks/:id', () => {
   });
 
   test('returns 404 for a task that does not exist', async () => {
-    const res = await request(app).delete('/tasks/999999').set('Authorization', alice.auth);
+    const res = await request(app)
+      .delete('/tasks/999999')
+      .set('Authorization', alice.auth);
 
     expect(res.status).toBe(404);
   });
