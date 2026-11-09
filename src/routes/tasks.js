@@ -7,10 +7,11 @@ const authenticateToken = require('../middleware/authenticateToken.js');
 router.use(authenticateToken);
 
 // GET /tasks — retrieve all tasks
-router.get('/', async (req, res) => {
+router.get('/', async (req, res, next) => {
   try{
   const result = await pool.query(
-    'SELECT id, title, completed FROM tasks WHERE user_id = $1'[req.user.id],
+    'SELECT id, title, completed FROM tasks WHERE user_id = $1',
+     [req.user.id],
   );
 
   const tasks = result.rows.map((task) => ({
@@ -91,7 +92,7 @@ router.patch('/:id', async (req, res, next) => {
     }
     const result = updateTaskSchema.safeParse(req.body);
 
-    if (!result.success || Object.keys(req.body).length === 0) {
+    if (!result.success || Object.keys(result.body).length === 0) {
       return res.status(400).json({
         error: 'Invalid task update',
         details: result.success
